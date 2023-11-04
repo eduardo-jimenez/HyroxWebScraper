@@ -7,7 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.ui import Select
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
+from copy import copy
 import requests
 import time
 import os
@@ -272,49 +273,80 @@ def ScrapeHyroxResults(driver, eventName: str, Division: str, Sex: str) -> list:
     return athletes
 
 
+# Copies the cells from source_sheet to target_sheet
+def copy_cells(source_sheet, target_sheet):
+    for (row, col), source_cell in source_sheet._cells.items():
+        target_cell = target_sheet.cell(column=col, row=row)
+
+        target_cell._value = source_cell._value
+        target_cell.data_type = source_cell.data_type
+
+        if source_cell.has_style:
+            target_cell.font = copy(source_cell.font)
+            target_cell.border = copy(source_cell.border)
+            target_cell.fill = copy(source_cell.fill)
+            target_cell.number_format = copy(source_cell.number_format)
+            target_cell.protection = copy(source_cell.protection)
+            target_cell.alignment = copy(source_cell.alignment)
+
+        if source_cell.hyperlink:
+            target_cell._hyperlink = copy(source_cell.hyperlink)
+
+        if source_cell.comment:
+            target_cell.comment = copy(source_cell.comment)
+
+    target_sheet.conditional_formatting = source_sheet.conditional_formatting
+        
+
 def scrapeHyroxCompleteEvent(driver, eventName: str, excelFilePath: str):
     # Create an Excel file
     workbook = Workbook()
     worksheet = workbook.active
 
+    # Copy the stats sheet from the reference sheet
+    reference_workbook = load_workbook('data\\RefHyroxSheet.xlsx')
+    reference_sheet = reference_workbook.get_sheet_by_name("Stats")
+    worksheet.title = "Stats"
+    copy_cells(reference_sheet, worksheet)
+
     # HYROX PRO Men
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX PRO', 'Men')
-    worksheet.title = "HYROX PRO Men"
+    worksheet = workbook.create_sheet("HYROX_PRO_Men")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX PRO Women
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX PRO', 'Women')
-    worksheet = workbook.create_sheet("HYROX PRO Women")
+    worksheet = workbook.create_sheet("HYROX_PRO_Women")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX Men
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX', 'Men')
-    worksheet = workbook.create_sheet("HYROX Men")
+    worksheet = workbook.create_sheet("HYROX_Men")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX Women
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX', 'Women')
-    worksheet = workbook.create_sheet("HYROX Women")
+    worksheet = workbook.create_sheet("HYROX_Women")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX TEAM RELAY
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Men')
-    worksheet = workbook.create_sheet("HYROX DOUBLES Men")
+    worksheet = workbook.create_sheet("HYROX_DOUBLES_Men")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX TEAM RELAY
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Women')
-    worksheet = workbook.create_sheet("HYROX DOUBLES Women")
+    worksheet = workbook.create_sheet("HYROX_DOUBLES_Women")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX TEAM RELAY
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Mixed')
-    worksheet = workbook.create_sheet("HYROX DOUBLES Mixed")
+    worksheet = workbook.create_sheet("HYROX_DOUBLES_Mixed")
     fillExcelWorksheet(worksheet, athletes)
 
     # HYROX TEAM RELAY
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX TEAM RELAY', 'Men')
-    worksheet = workbook.create_sheet("HYROX TEAM RELAY")
+    worksheet = workbook.create_sheet("HYROX_TEAM_RELAY")
     fillExcelWorksheet(worksheet, athletes)
 
     workbook.save(excelFilePath)

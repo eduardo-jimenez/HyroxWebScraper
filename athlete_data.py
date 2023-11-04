@@ -97,7 +97,10 @@ class AthleteData:
         sheet.cell(1, 20).value = "Wall Balls"
         sheet.cell(1, 21).value = "Roxzone Time"
         sheet.cell(1, 22).value = "Penalty"
-        sheet.cell(1, 23).value = "Total Time"
+        sheet.cell(1, 23).value = "Total Running Time"
+        sheet.cell(1, 24).value = "Avg Running Time"
+        sheet.cell(1, 25).value = "Max Diff from Avg Running"
+        sheet.cell(1, 26).value = "Total Time"
 
         # set all the cells as bold
         bold_font = Font(bold=True)
@@ -128,7 +131,24 @@ class AthleteData:
         sheet.cell(row, 20).value = timeSecondsToDeltaTime(self.wallBalls)
         sheet.cell(row, 21).value = timeSecondsToDeltaTime(self.roxzoneTime)
         sheet.cell(row, 22).value = self.penalty
-        sheet.cell(row, 23).value = timeSecondsToDeltaTime(self.totalTime)
+        sumStr = "="
+        for i in range(0, 8):
+            sumStr += sheet.cell(row, 5 + 2 * i).coordinate;
+            if i < 7:
+                sumStr += " + "
+        sheet.cell(row, 23).value = sumStr
+        sheet.cell(row, 24).value = "=" + sheet.cell(row, 23).coordinate + " / 8"
+        sheet.cell(row, 24).number_format = "HH:MM:SS"
+        maxDiffStr = "=MAX("
+        for i in range(0, 8):
+            maxDiffStr += "ABS(" + sheet.cell(row, 5 + 2 * i).coordinate + " - " + sheet.cell(row, 24).coordinate + ")"
+            if i < 7:
+                maxDiffStr += ", "
+            else:
+                maxDiffStr += ")"
+        sheet.cell(row, 25).value = maxDiffStr
+        sheet.cell(row, 25).number_format = "HH:MM:SS"
+        sheet.cell(row, 26).value = timeSecondsToDeltaTime(self.totalTime)
 
 
 # Writes a file with the info of all the athletes in the given list
