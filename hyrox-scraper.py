@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import Select
 from openpyxl import Workbook
 import requests
 import time
+import os
 
 
 # Returns the index of the option with the given string
@@ -323,7 +324,9 @@ def scrapeHyroxCompleteEvent(driver, eventName: str, excelFilePath: str):
 driver = webdriver.Chrome()
 
 # scrape the whole Valencia 2023 event
-scrapeHyroxCompleteEvent(driver, '2023 Valencia', 'D:\\Temp\\Hyrox\\ValenciaHyrox.xlsx')
+currFolder = os.getcwd()
+filePath = currFolder + '\\data\\ValenciaHyrox.xlsx'
+scrapeHyroxCompleteEvent(driver, '2023 Valencia', filePath)
 
 # close the browser
 driver.quit()
