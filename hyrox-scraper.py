@@ -357,8 +357,8 @@ driver = webdriver.Chrome()
 
 # scrape the whole Valencia 2023 event
 currFolder = os.getcwd()
-filePath = currFolder + '\\data\\ValenciaHyrox.xlsx'
-scrapeHyroxCompleteEvent(driver, '2023 Valencia', filePath)
+filePath = currFolder + '\\data\\HyroxBirmingham-2023.xlsx'
+scrapeHyroxCompleteEvent(driver, '2023 Birmingham', filePath)
 
 # close the browser
 driver.quit()
