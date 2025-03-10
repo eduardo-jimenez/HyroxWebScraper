@@ -72,7 +72,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
         if participant_title != None:
             participantRoot = participant_title.parent
             participantTable = participantRoot.table.tbody
-            for row in participantTable.findAll('tr'):
+            for row in participantTable.find_all('tr'):
                 if row.th != None:
                     if "Name" in row.th.text:
                         participantName = row.td.text
@@ -82,7 +82,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
         if members_title != None:
             membersRoot = members_title.parent
             membersTable = membersRoot.table.tbody
-            for row in membersTable.findAll('tr'):
+            for row in membersTable.find_all('tr'):
                 if row.th != None:
                     if "Member" in row.th.text:
                         if (participantName == None):
@@ -93,7 +93,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
         if doublesTeam_title != None:
             doublesTeamRoot = doublesTeam_title.parent
             doublesTeamTable = doublesTeamRoot.table.tbody
-            for row in doublesTeamTable.findAll('tr'):
+            for row in doublesTeamTable.find_all('tr'):
                 if row.th != None:
                     if "Age Group" in row.th.text:
                         ageGroup = row.td.text
@@ -104,7 +104,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
             # extra info (Race and Division)
             scoringRoot = scoring_title.parent
             scoringTable = scoringRoot.table.tbody
-            for row in scoringTable.findAll('tr'):
+            for row in scoringTable.find_all('tr'):
                 if row.th != None:
                     if "Race" in row.th.text:
                         eventName = row.td.text
@@ -126,7 +126,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
             # Judging
             judgingRoot = judging_title.parent
             judgingTable = judgingRoot.table.tbody
-            for row in judgingTable.findAll('tr'):
+            for row in judgingTable.find_all('tr'):
                 if row.th != None:
                     if "Penalty" in row.th.text:
                         athlete.penalty = row.td.text
@@ -134,7 +134,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
             # Overall Time
             overallRoot = overall_time_title.parent
             overallTable = overallRoot.table.tbody
-            for row in overallTable.findAll('tr'):
+            for row in overallTable.find_all('tr'):
                 if row.th != None:
                     if "Overall Time" in row.th.text:
                         timeStr = row.td.text
@@ -143,7 +143,7 @@ def ScrapeAthleteInfo(url: str) -> AthleteData:
             # the workout results
             workoutRoot = workout_title.parent
             workoutTable = workoutRoot.table.tbody
-            for row in workoutTable.findAll('tr'):
+            for row in workoutTable.find_all('tr'):
                 if row.th != None:
                     rowName = row.th.text
                     if "Running" in rowName:
@@ -202,15 +202,17 @@ def ScrapeHyroxResults(driver, eventName: str, Division: str, Sex: str) -> list:
     division_index = 0
     match Division:
         case "HYROX PRO":
-            division_index = 0
-        case "HYROX TEAM RELAY":
-            division_index = 1
-        case "HYROX":
             division_index = 2
+        case "HYROX":
+            division_index = 5
+        case "HYROX PRO DOUBLES":
+            division_index = 8
         case "HYROX DOUBLES":
-            division_index = 3
+            division_index = 11
+        case "HYROX TEAM RELAY":
+            division_index = 14
     
-    driver.get('https://results.hyrox.com/season-6/?pid=start&pidp=ranking_nav')
+    driver.get('https://results.hyrox.com/season-7/?pid=start&pidp=ranking_nav')
     time.sleep(0.25)
     race_selector_elem = driver.find_element(by=By.ID, value="default-lists-event_main_group")
     race_selector = Select(race_selector_elem)
@@ -329,17 +331,27 @@ def scrapeHyroxCompleteEvent(driver, eventName: str, excelFilePath: str):
     worksheet = workbook.create_sheet("HYROX_Women")
     fillExcelWorksheet(worksheet, athletes)
 
-    # HYROX TEAM RELAY
+    # HYROX PRO DOUBLES Men
+    athletes = ScrapeHyroxResults(driver, eventName, 'HYROX PRO DOUBLES', 'Men')
+    worksheet = workbook.create_sheet("HYROX_PRO_DOUBLES_Men")
+    fillExcelWorksheet(worksheet, athletes)
+
+    # HYROX PRO DOUBLES Women
+    athletes = ScrapeHyroxResults(driver, eventName, 'HYROX PRO DOUBLES', 'Women')
+    worksheet = workbook.create_sheet("HYROX_PRO_DOUBLES_Women")
+    fillExcelWorksheet(worksheet, athletes)
+
+    # HYROX DOUBLES Men
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Men')
     worksheet = workbook.create_sheet("HYROX_DOUBLES_Men")
     fillExcelWorksheet(worksheet, athletes)
 
-    # HYROX TEAM RELAY
+    # HYROX DOUBLES Women
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Women')
     worksheet = workbook.create_sheet("HYROX_DOUBLES_Women")
     fillExcelWorksheet(worksheet, athletes)
 
-    # HYROX TEAM RELAY
+    # HYROX DOUBLES Mixed
     athletes = ScrapeHyroxResults(driver, eventName, 'HYROX DOUBLES', 'Mixed')
     worksheet = workbook.create_sheet("HYROX_DOUBLES_Mixed")
     fillExcelWorksheet(worksheet, athletes)
@@ -357,8 +369,8 @@ driver = webdriver.Chrome()
 
 # scrape the whole Valencia 2023 event
 currFolder = os.getcwd()
-filePath = currFolder + '\\data\\HyroxBirmingham-2023.xlsx'
-scrapeHyroxCompleteEvent(driver, '2023 Birmingham', filePath)
+filePath = currFolder + '\\data\\2024-HyroxValencia.xlsx'
+scrapeHyroxCompleteEvent(driver, '2024 Valencia', filePath)
 
 # close the browser
 driver.quit()
